@@ -49,10 +49,15 @@ int avThroughput(int uavSelected, System &ob, Graph &g ){
     
     for(auto cord:ob.permCords[uavSelected]){
         ob.uavs[uavSelected]=cord;
+        ob.initialize(4, 8, uavToUav, uavToUser);
+        initialize(g);
         res+=sumOfDemandFulfilled(g,ob);
     }
     
     ob.uavs[uavSelected]=currentPos;
+    ob.initialize(4, 8, uavToUav, uavToUser);
+    initialize(g);
+
     return res/ob.permCords[uavSelected].size();
 }
 
@@ -72,23 +77,21 @@ float fitnessFunction(int currThroughput, int Tavg, int Tmax){
 }
 
 void checkFitness(int uavSelected, Graph &g, System &ob){
-//    for(auto cord:ob.permCords[uavSelected]){
-//        ob.uavs[uavSelected]=cord;
-//        int avThr=avThroughput(uavSelected, ob, g);
-//        int maxThr=maxThroughput(ob, g);
-//        int fitness=fitnessFunction(sumOfDemandFulfilled(g, ob),avThr,maxThr);
-//
-//        initialize(g);
-//        if(fitness>0.9)
-//            break;
-//
-//        if(sumOfDemandFulfilled(g, ob)==19)
-//            break;
-//    }
-    
-    ob.uavs[uavSelected]={4,15};
-    ob.initialize(4,8,uavToUav,uavToUser);
-    initialize(g);
+    for(auto cord:ob.permCords[uavSelected]){
+        ob.uavs[uavSelected]=cord;
+        ob.initialize(4, 8, uavToUav, uavToUser);
+        initialize(g);
+
+        int avThr=avThroughput(uavSelected, ob, g);
+        int maxThr=maxThroughput(ob, g);
+        int demandFulfilled=sumOfDemandFulfilled(g, ob);
+        
+        float fitness=fitnessFunction(demandFulfilled, avThr, maxThr);
+        
+        if(fitness>=0.5)
+            break;
+        
+    }
 }
 
 int main(){
@@ -115,7 +118,7 @@ int main(){
         g.demandTable[a++].push_back(demandFulf);
 
     }
-    
+
     for(auto x:g.demandTable)
         cout<<x[0]<<"->"<<x[1]<<" "<<x[2]<<" "<<x[3]<<endl;
     
