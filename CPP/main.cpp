@@ -2,6 +2,7 @@
 #include<vector>
 #include<list>
 #include <unordered_map>
+#include<random>
 #include "sys.hpp"
 #include "graph.hpp"
 
@@ -76,7 +77,13 @@ float fitnessFunction(int currThroughput, int Tavg, int Tmax){
     return 0.5*pow((currThroughput/Tavg),2);
 }
 
+void mutation(int uavSelected, int cord){
+    
+}
+
 void checkFitness(int uavSelected, Graph &g, System &ob){
+    int minFitness=0.5;
+    pair<int,int> p;
     for(auto cord:ob.permCords[uavSelected]){
         ob.uavs[uavSelected]=cord;
         ob.initialize(4, 8, uavToUav, uavToUser);
@@ -88,13 +95,20 @@ void checkFitness(int uavSelected, Graph &g, System &ob){
         
         float fitness=fitnessFunction(demandFulfilled, avThr, maxThr);
         
-        if(fitness>=0.5)
-            break;
-        
+        if(fitness>=minFitness){
+            minFitness=fitness;
+            p=cord;
+        }
     }
+    ob.uavs[uavSelected]=p;
+    ob.initialize(4, 8, uavToUav, uavToUser);
+    initialize(g);
 }
 
 int main(){
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_real_distribution<> dis(0, 1);
     int numOfUav=4, i=0,a=0;
     int numOfUser=8;
     
