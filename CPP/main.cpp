@@ -77,8 +77,48 @@ float fitnessFunction(int currThroughput, int Tavg, int Tmax){
     return 0.5*pow((currThroughput/Tavg),2);
 }
 
-void mutation(int uavSelected, int cord){
+int countBits(u_long n){
     
+    if(n==0)
+        return 0;
+    int i=31;
+    int mask=1<<i;
+    
+    while(!(n&mask)){
+        i--;
+        mask=1<<i;
+    }
+    return i+1;
+}
+
+int getithBit(long n, int i){
+    return (n&(1<<i)) >0 ? 1 : 0;
+}
+
+void mutation(int uavSelected, System &ob, Graph &g){
+    
+    srand( static_cast<unsigned int>(time(nullptr)));
+    auto size=ob.permCords[uavSelected].size();
+    int bits=countBits(size-1);
+    int x=(rand()%(bits));
+    long indexOfCurrCord = 0;
+    pair<int,int> cord=ob.uavs[uavSelected];
+    auto it=find(ob.permCords[uavSelected].begin(),ob.permCords[uavSelected].end(),cord);
+    if(it!=ob.permCords[uavSelected].end())
+        indexOfCurrCord=it-ob.permCords[uavSelected].begin();
+
+    int bitToBeSet=!(getithBit(indexOfCurrCord, x));
+
+    int mask = 1 << x;
+    
+    long cordf=((indexOfCurrCord & ~mask) | (bitToBeSet << x));
+    
+    if(cordf<size)
+        ob.uavs[uavSelected]=(ob.permCords[uavSelected])[cordf];
+    
+    ob.initialize(4, 8, uavToUav, uavToUser);
+    initialize(g);
+
 }
 
 void checkFitness(int uavSelected, Graph &g, System &ob){
@@ -126,6 +166,9 @@ int main(){
     initialize(g);
     
     checkFitness(0, g, ob);
+
+    if(dis(gen) < 0.3)
+        mutation(0, ob, g);
 
     for(auto x:g.demandTable){
         int demandFulf=g.fulfillDemand(x[0], x[1], x[2]);

@@ -117,6 +117,9 @@ public:
             }
             uavToUser[mini.second][j]={1,linkCapacity(distance(uavs[mini.second], users[j]))};
         }
+        
+        uavToUav=uavToUav;
+        uavToUser=uavToUser;
     }
     
     System(int numberOfUav,int numberOfUser,vector<vector<pair<int,int>>> &uavToUav, vector<vector<pair<int,int>>> &uavToUser){
@@ -126,6 +129,8 @@ public:
         uavToUser=uavToUser;
         
         initialize(numOfUav, numOfUser, uavToUav, uavToUser);
+        
+
         
         //map me coordinates bhare hai
         for(int i=0;i<uavToUav.size();i++){
@@ -142,13 +147,13 @@ public:
         
         gridTraversal();
         //        //Permissible coord output karan lai
-                for(auto &x:permCords){
-                    cout<<x.first<<":";
-                    for(auto ele:x.second)
-                        cout<<ele.first<<","<<ele.second<<" ";
-                    cout<<endl;
-
-                }
+//                for(auto &x:permCords){
+//                    cout<<x.first<<":";
+//                    for(auto ele:x.second)
+//                        cout<<ele.first<<","<<ele.second<<" ";
+//                    cout<<endl;
+//
+//                }
         
         
     }
