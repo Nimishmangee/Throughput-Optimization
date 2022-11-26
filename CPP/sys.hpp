@@ -146,6 +146,7 @@ public:
         }
         
         gridTraversal();
+        
         //        //Permissible coord output karan lai
 //                for(auto &x:permCords){
 //                    cout<<x.first<<":";

@@ -138,6 +138,7 @@ void checkFitness(int uavSelected, Graph &g, System &ob){
         if(fitness>=minFitness){
             minFitness=fitness;
             p=cord;
+//            break;
         }
     }
     ob.uavs[uavSelected]=p;
@@ -165,17 +166,37 @@ int main(){
     
     initialize(g);
     
-    checkFitness(0, g, ob);
+    set<pair<int,int>> checked;
+    for(int p=0;p<g.demandTable.size();p++){
+        auto x=g.demandTable[p];
+        int demandFulf=g.fulfillDemand(x[0], x[1], x[2]);
+        
+        if(demandFulf<x[2] and checked.find({x[0],x[1]})==checked.end()){
+            checked.insert({x[0],x[1]});
+            vector<int> pathFinder;
+            g.getPath(x[0], x[1], pathFinder);
+            
+            for(auto y:pathFinder){
+                if(y<4){
+                    checkFitness(y, g, ob);
+                    if(dis(gen) < 0.1)
+                        mutation(y, ob, g);
+                    
+                }
+            }
+            p=-1;
+        }
+    }
+    
+    ob.initialize(4, 8, uavToUav, uavToUser);
+    initialize(g);
 
-    if(dis(gen) < 0.3)
-        mutation(0, ob, g);
-
+    
     for(auto x:g.demandTable){
         int demandFulf=g.fulfillDemand(x[0], x[1], x[2]);
         g.demandTable[a++].push_back(demandFulf);
 
     }
-
     for(auto x:g.demandTable)
         cout<<x[0]<<"->"<<x[1]<<" "<<x[2]<<" "<<x[3]<<endl;
     
