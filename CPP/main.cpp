@@ -3,6 +3,7 @@
 #include<list>
 #include <unordered_map>
 #include<random>
+#include<fstream>
 #include "sys.hpp"
 #include "graph.hpp"
 
@@ -74,7 +75,7 @@ float fitnessFunction(int currThroughput, int Tavg, int Tmax){
     if(currThroughput>=Tavg)
         return 0.5+0.5*pow(((currThroughput-Tavg)/(Tmax-Tavg)),2);
     
-    return 0.5*pow((currThroughput/Tavg),2);
+    return 0.5*pow(((currThroughput-Tavg)/(Tmax-Tavg)),2);
 }
 
 int countBits(u_long n){
@@ -166,6 +167,24 @@ int main(){
     
     initialize(g);
     
+    //File Handling Initial coord
+    fstream fout;
+
+    fout.open("cord.txt",ios::app);
+
+    if (fout){
+        fout<<"Initial position"<<endl;
+        for(int i=0;i<numOfUav;i++)
+            fout<<i<<":"<<ob.uavs[i].first<<","<<ob.uavs[i].second<<endl;
+
+        for(int i=0;i<numOfUser;i++)
+            fout<<(i+4)<<":"<<ob.users[i].first<<","<<ob.users[i].second<<endl;
+
+        cout<<endl;
+        fout.close();
+    }
+    
+    
     set<pair<int,int>> checked;
     for(int p=0;p<g.demandTable.size();p++){
         auto x=g.demandTable[p];
@@ -190,6 +209,21 @@ int main(){
     
     ob.initialize(4, 8, uavToUav, uavToUser);
     initialize(g);
+    
+    //Final coord 
+
+    fout.open("cord.txt",ios::app);
+
+    if (fout){
+        fout<<"Final position"<<endl;
+        for(int i=0;i<numOfUav;i++)
+            fout<<i<<":"<<ob.uavs[i].first<<","<<ob.uavs[i].second<<endl;
+
+        for(int i=0;i<numOfUser;i++)
+            fout<<(i+4)<<":"<<ob.users[i].first<<","<<ob.users[i].second<<endl;
+
+        fout.close();
+    }
 
     
     for(auto x:g.demandTable){
@@ -197,8 +231,10 @@ int main(){
         g.demandTable[a++].push_back(demandFulf);
 
     }
+    
+    cout<<"Pair"<<" "<<"Demand"<<" Fulfilled"<<endl;
     for(auto x:g.demandTable)
-        cout<<x[0]<<"->"<<x[1]<<" "<<x[2]<<" "<<x[3]<<endl;
+        cout<<x[0]<<"->"<<x[1]<<"   "<<x[2]<<"    "<<x[3]<<endl;
     
 }
 

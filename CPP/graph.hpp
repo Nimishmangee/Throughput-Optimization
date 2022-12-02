@@ -19,9 +19,9 @@ public:
     Graph(int v){
         V=v;
         l=new list<pair<int,int>>[V];
-        demandTable={{4,6,10},
-                {6,7,3},
-                {5,11,7},
+        demandTable={{4,6,8},
+                {6,7,9},
+                {5,11,4},
                 {9,10,4}
         };
     }

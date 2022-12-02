@@ -147,13 +147,13 @@ public:
         
         gridTraversal();
         
-        //        //Permissible coord output karan lai
+                //Permissible coord output karan lai
 //                for(auto &x:permCords){
 //                    cout<<x.first<<":";
 //                    for(auto ele:x.second)
 //                        cout<<ele.first<<","<<ele.second<<" ";
 //                    cout<<endl;
-//
+
 //                }
         
         
