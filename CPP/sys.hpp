@@ -21,6 +21,7 @@ public:
     int Rv2c=400;
     vector<pair<int,int>> uavs={{2,15},{8,22},{15,15},{17,23}};
     vector<pair<int,int>> users={{2,18},{4,11},{10,25},{15,16},{17,14},{19,15},{21,23},{20,24}};
+    vector<pair<int,int>> obstacles;
     vector<vector<pair<int,int>>> uavToUav;
     vector<vector<pair<int,int>>> uavToUser;
 
@@ -120,6 +121,15 @@ public:
         
         uavToUav=uavToUav;
         uavToUser=uavToUser;
+        
+        //Placing random obstacles
+//        srand(time(0));
+        while(obstacles.size()<=20){
+            int x=(rand()%30);
+            int y=(rand()%30);
+            
+            obstacles.push_back({x,y});
+        }
     }
     
     System(int numberOfUav,int numberOfUser,vector<vector<pair<int,int>>> &uavToUav, vector<vector<pair<int,int>>> &uavToUser){
@@ -148,13 +158,13 @@ public:
         gridTraversal();
         
                 //Permissible coord output karan lai
-//                for(auto &x:permCords){
-//                    cout<<x.first<<":";
-//                    for(auto ele:x.second)
-//                        cout<<ele.first<<","<<ele.second<<" ";
-//                    cout<<endl;
+                for(auto &x:permCords){
+                    cout<<x.first<<":";
+                    for(auto ele:x.second)
+                        cout<<ele.first<<","<<ele.second<<" ";
+                    cout<<endl;
 
-//                }
+                }
         
         
     }

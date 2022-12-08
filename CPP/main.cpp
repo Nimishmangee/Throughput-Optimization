@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include<random>
 #include<fstream>
+#include <stdlib.h>
 #include "sys.hpp"
 #include "graph.hpp"
 
@@ -122,9 +123,28 @@ void mutation(int uavSelected, System &ob, Graph &g){
 
 }
 
+bool checkObstacle(pair<int,int> initialCord, pair<int,int> currCord, System &ob){
+    
+    //Straight line equation
+    float x1=initialCord.first;
+    float y1=initialCord.second;
+    float x2=currCord.first;
+    float y2=currCord.second;
+    float m=(y2-y2)/(x2-x1);
+    for(auto obstacle:ob.obstacles){
+        int x=obstacle.first;
+        int y=obstacle.second;
+        
+        if((y-y1)-m*(x-x1)==0)
+            return 1;
+    }
+    return 0;
+}
+
 void checkFitness(int uavSelected, Graph &g, System &ob){
     int minFitness=0.5;
     pair<int,int> p;
+    pair<int,int> initialCord=ob.uavs[uavSelected];
     for(auto cord:ob.permCords[uavSelected]){
         ob.uavs[uavSelected]=cord;
         ob.initialize(4, 8, uavToUav, uavToUser);
@@ -135,6 +155,9 @@ void checkFitness(int uavSelected, Graph &g, System &ob){
         int demandFulfilled=sumOfDemandFulfilled(g, ob);
         
         float fitness=fitnessFunction(demandFulfilled, avThr, maxThr);
+        
+        if(checkObstacle(initialCord, cord, ob))
+            fitness-=0.1;
         
         if(fitness>=minFitness){
             minFitness=fitness;
@@ -154,6 +177,7 @@ int main(){
     int numOfUav=4, i=0,a=0;
     int numOfUser=8;
     
+
     vector<vector<string>> grid(30,vector<string>(30,"."));
     
     System ob(numOfUav,numOfUser,uavToUav,uavToUser);
@@ -164,6 +188,9 @@ int main(){
     
     for(auto x:ob.uavs)
         grid[x.first][x.second]="V"+to_string(i++);
+    
+    for(auto x:ob.obstacles)
+        grid[x.first][x.second]='O';
     
     initialize(g);
     
@@ -206,6 +233,8 @@ int main(){
             p=-1;
         }
     }
+    
+    displayGrid(grid);
     
     ob.initialize(4, 8, uavToUav, uavToUser);
     initialize(g);
