@@ -186,7 +186,7 @@ int main(){
     random_device rd;
     mt19937 gen(rd());
     uniform_real_distribution<> dis(0, 1);
-    int numOfUav=4, i=0,a=0;
+    int numOfUav=4, i=0,a=0,b=0;
     int numOfUser=8;
     
 
@@ -224,45 +224,7 @@ int main(){
         fout.close();
     }
     
-    
-    set<pair<int,int>> checked;
-    for(int p=0;p<g.demandTable.size();p++){
-        auto x=g.demandTable[p];
-        int demandFulf=g.fulfillDemand(x[0], x[1], x[2]);
-        
-        if(demandFulf<x[2] and checked.find({x[0],x[1]})==checked.end()){
-            checked.insert({x[0],x[1]});
-            vector<int> pathFinder;
-            g.getPath(x[0], x[1], pathFinder);
-            
-            for(auto y:pathFinder){
-                if(y<4){
-                    gt.checkFitness(y);
-                    if(dis(gen) < 0.1)
-                        gt.mutation(y);
-                    
-                }
-            }
-            p=-1;
-        }
-    }
-    
-    ob.initialize(4, 8, uavToUav, uavToUser);
-    gt.initialize();
-    
-    //Final coord
-    fout.open("cord.txt",ios::app);
-    if (fout){
-        fout<<"Final position"<<endl;
-        for(int i=0;i<numOfUav;i++)
-            fout<<i<<":"<<ob.uavs[i].first<<","<<ob.uavs[i].second<<endl;
-
-        for(int i=0;i<numOfUser;i++)
-            fout<<(i+4)<<":"<<ob.users[i].first<<","<<ob.users[i].second<<endl;
-
-        fout.close();
-    }
-
+    cout<<"Capacities before Optimization"<<endl<<endl;
     
     for(auto x:g.demandTable){
         int demandFulf=g.fulfillDemand(x[0], x[1], x[2]);
@@ -270,9 +232,66 @@ int main(){
 
     }
 
-    cout<<"Pair"<<" "<<"Demand"<<" Fulfilled"<<endl;
+    cout<<"Pair"<<" "<<"Demand"<<" Capacity"<<endl;
     for(auto x:g.demandTable)
         cout<<x[0]<<"->"<<x[1]<<"   "<<x[2]<<"    "<<x[3]<<endl;
     
+    ob.initialize(4, 8, uavToUav, uavToUser);
+    gt.initialize();
+    
+    string ch;
+    cout<<endl<<"Do you want to see maximised Throughputs (y/n):";
+    cin>>ch;
+    
+    if(ch=="y" or ch=="Y" or ch=="Yes" or ch=="yes"){
+        set<pair<int,int>> checked;
+        for(int p=0;p<g.demandTable.size();p++){
+            auto x=g.demandTable[p];
+            int demandFulf=g.fulfillDemand(x[0], x[1], x[2]);
+            
+            if(demandFulf<x[2] and checked.find({x[0],x[1]})==checked.end()){
+                checked.insert({x[0],x[1]});
+                vector<int> pathFinder;
+                g.getPath(x[0], x[1], pathFinder);
+                
+                for(auto y:pathFinder){
+                    if(y<4){
+                        gt.checkFitness(y);
+                        if(dis(gen) < 0.05)
+                            gt.mutation(y);
+                        
+                    }
+                }
+                p=-1;
+            }
+        }
+        
+        ob.initialize(4, 8, uavToUav, uavToUser);
+        gt.initialize();
+        
+        //Final coord
+        fout.open("cord.txt",ios::app);
+        if (fout){
+            fout<<"Final position"<<endl;
+            for(int i=0;i<numOfUav;i++)
+                fout<<i<<":"<<ob.uavs[i].first<<","<<ob.uavs[i].second<<endl;
+
+            for(int i=0;i<numOfUser;i++)
+                fout<<(i+4)<<":"<<ob.users[i].first<<","<<ob.users[i].second<<endl;
+
+            fout.close();
+        }
+        
+        for(auto x:g.demandTable){
+            int demandFulf=g.fulfillDemand(x[0], x[1], x[2]);
+            g.demandTable[b++][3]=demandFulf;
+
+        }
+
+        cout<<"Pair"<<" "<<"Demand"<<" Capacity"<<endl;
+        for(auto x:g.demandTable)
+            cout<<x[0]<<"->"<<x[1]<<"   "<<x[2]<<"    "<<x[3]<<endl;
+
+    }
 }
 
