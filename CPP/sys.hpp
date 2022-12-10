@@ -123,12 +123,21 @@ public:
         uavToUser=uavToUser;
         
         //Placing random obstacles
-//        srand(time(0));
         while(obstacles.size()<=20){
             int x=(rand()%30);
             int y=(rand()%30);
             
             obstacles.push_back({x,y});
+        }
+    }
+    
+    void printInitialPopulation(){
+        //Permissible coord output karan lai
+        for(auto &x:permCords){
+            cout<<x.first<<":";
+            for(auto ele:x.second)
+                cout<<ele.first<<","<<ele.second<<" ";
+            cout<<endl;
         }
     }
     
@@ -142,7 +151,7 @@ public:
         
 
         
-        //map me coordinates bhare hai
+        //Inserting coordinates in map
         for(int i=0;i<uavToUav.size();i++){
             for(int j=0;j<uavToUav[i].size();j++){
                 if(uavToUav[i][j].first==1)
@@ -156,16 +165,6 @@ public:
         }
         
         gridTraversal();
-        
-                //Permissible coord output karan lai
-//                for(auto &x:permCords){
-//                    cout<<x.first<<":";
-//                    for(auto ele:x.second)
-//                        cout<<ele.first<<","<<ele.second<<" ";
-//                    cout<<endl;
-//
-//                }
-        
         
     }
 };

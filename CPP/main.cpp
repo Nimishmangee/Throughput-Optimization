@@ -1,7 +1,7 @@
 #include<iostream>
 #include<vector>
 #include<list>
-#include <unordered_map>
+#include<unordered_map>
 #include<random>
 #include<fstream>
 #include "sys.hpp"
@@ -9,9 +9,16 @@
 
 using namespace std;
 
+vector<vector<string>> grid(30,vector<string>(30,"."));
 vector<vector<pair<int,int>>> uavToUav(4,vector<pair<int,int>>(4,{0,0}));
 vector<vector<pair<int,int>>> uavToUser(4,vector<pair<int,int>>(8,{0,0}));
 
+class Compare{
+public:
+    bool operator()(pair<int,pair<int,int>>a, pair<int,pair<int,int>>b){
+        return a.first>=b.first;
+    }
+};
 void displayGrid(vector<vector<string>> grid){
     for(auto g:grid){
         for(auto u:g)
@@ -24,6 +31,7 @@ class genetic{
 public:
     System *ob2;
     Graph *g2;
+    set<pair<float,pair<int,int>>,Compare> cross;
     genetic(System &ob, Graph &g){
         ob2=&ob;
         g2=&g;
@@ -149,15 +157,33 @@ public:
         return 0;
     }
     
+    void crossover(int uavSelected){
+        
+        auto it=cross.begin();
+        
+        if(cross.size()==0)
+            return;
+        
+        if(cross.size()==1){
+            ob2->uavs[uavSelected]=(*it).second;
+            return;
+        }
+        
+        ob2->uavs[uavSelected]=(*it).second;
+        ob2->initialize(4, 8, uavToUav, uavToUser);
+        initialize();
+        
+        cross.clear();
+    }
+    
     void checkFitness(int uavSelected){
-        int minFitness=0.5;
-        pair<int,int> p;
+        int minFitness=0.4;
         pair<int,int> initialCord=ob2->uavs[uavSelected];
         for(auto cord:ob2->permCords[uavSelected]){
             ob2->uavs[uavSelected]=cord;
             ob2->initialize(4, 8, uavToUav, uavToUser);
             initialize();
-
+            
             int avThr=avThroughput(uavSelected);
             int maxThr=maxThroughput();
             int demandFulfilled=sumOfDemandFulfilled();
@@ -165,19 +191,25 @@ public:
             float fitness=fitnessFunction(demandFulfilled, avThr, maxThr);
             
             if(checkObstacle(initialCord, cord))
-                fitness-=0.1;
+                fitness-=0.05;
             
-            if(fitness>=minFitness){
-                minFitness=fitness;
-                p=cord;
-    //            break;
-            }
+            if(fitness>=minFitness)
+                cross.insert({fitness,cord});
+            
+            
+            ob2->uavs[uavSelected]=initialCord;
+            ob2->initialize(4, 8, uavToUav, uavToUser);
+            initialize();
+            
         }
-        ob2->uavs[uavSelected]=p;
-        ob2->initialize(4, 8, uavToUav, uavToUser);
-        initialize();
+        auto it=cross.begin();
+        while(it!=cross.end()){
+            cout<<(*it).first<<" ";
+            it++;
+        }
+        
+        crossover(uavSelected);
     }
-
 };
 
 
@@ -189,12 +221,20 @@ int main(){
     int numOfUav=4, i=0,a=0,b=0;
     int numOfUser=8;
     
-
-    vector<vector<string>> grid(30,vector<string>(30,"."));
-    
     System ob(numOfUav,numOfUser,uavToUav,uavToUser);
     Graph g(12);
     genetic gt(ob,g);
+    
+    char choice;
+    cout<<"Do you want to use default demand table (d) or create yours (n). Enter d/n:";
+    cin>>choice;
+    
+    if(choice=='n'){
+        cout<<"Input pair and their throughput demand (User pair is in range 4-11)"<<endl;
+        for(int i=0;i<4;i++){
+            cin>>g.demandTable[i][0]>>g.demandTable[i][1]>>g.demandTable[i][2];
+        }
+    }
     
     for(auto x:ob.users)
         grid[x.first][x.second]='*';
@@ -210,7 +250,7 @@ int main(){
     //File Handling Initial coord
     fstream fout;
 
-    fout.open("cord.txt",ios::app);
+    fout.open("cord.txt",ios::trunc);
 
     if (fout){
         fout<<"Initial position"<<endl;
@@ -239,6 +279,9 @@ int main(){
     ob.initialize(4, 8, uavToUav, uavToUser);
     gt.initialize();
     
+    cout<<endl<<"The initial population of chromosomes for each UAV is"<<endl;
+    ob.printInitialPopulation();
+    
     string ch;
     cout<<endl<<"Do you want to see maximised Throughputs (y/n):";
     cin>>ch;
@@ -257,7 +300,7 @@ int main(){
                 for(auto y:pathFinder){
                     if(y<4){
                         gt.checkFitness(y);
-                        if(dis(gen) < 0.05)
+                        if(dis(gen) < 0.01)
                             gt.mutation(y);
                         
                     }
@@ -287,6 +330,8 @@ int main(){
             g.demandTable[b++][3]=demandFulf;
 
         }
+        
+        cout<<"Capacities after Optimization"<<endl<<endl;
 
         cout<<"Pair"<<" "<<"Demand"<<" Capacity"<<endl;
         for(auto x:g.demandTable)
